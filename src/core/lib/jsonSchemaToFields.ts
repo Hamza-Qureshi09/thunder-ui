@@ -496,19 +496,31 @@ export class JSONSchemaToFields {
     return await this.resolveDeepFields(this._toFields(name, schema));
   }
 
-  static flatten(fields: TField[], parentName?: string): TField[] {
+  static flatten(fields: TField[], opts?: {
+    parentName?: string;
+    excludeArray?: boolean;
+  }): TField[] {
     return fields.flatMap((field) => {
+      if (opts?.excludeArray && field.type === "array") return [];
+
       if (field.fields instanceof Array && field.fields.length) {
         return this.flatten(
           field.fields,
-          [parentName, field.name, field.type === "array" ? "0" : undefined]
-            .filter(Boolean).join("."),
+          {
+            ...opts,
+            parentName: [
+              opts?.parentName,
+              field.name,
+              field.type === "array" ? "0" : undefined,
+            ]
+              .filter(Boolean).join("."),
+          },
         );
       }
 
       delete field.parentName;
 
-      field.name = [parentName, field.name].filter(Boolean).join(".");
+      field.name = [opts?.parentName, field.name].filter(Boolean).join(".");
 
       return field;
     });
