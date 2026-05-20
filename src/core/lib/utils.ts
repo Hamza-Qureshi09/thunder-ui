@@ -71,12 +71,6 @@ export function getInitials(name?: string) {
     : `${first[0].toUpperCase()}${last[0].toUpperCase()}`;
 }
 
-export const handleDelete = async (url: string) => {
-  return await ThunderSDK.imageKit.deleteFile({
-    body: { url },
-  });
-}
-
 export function resolveUrl(path?: string) {
   const baseUrl = new URL(import.meta.env.BASE_URL, window.location.origin)
     .toString()
