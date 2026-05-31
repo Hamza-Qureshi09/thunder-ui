@@ -86,13 +86,15 @@ export const coreRoutes = Object.entries(
 ).map(([group, routes]) => {
   routes = routes ?? []
 
-  const indexRoute = routes.filter((route) =>
-    allowDisplayRoute(route.display)
-  )[0]
-
   routes.push({
     path: "",
-    Component: () => <Navigate to={indexRoute?.path ?? "notFound"} />,
+    Component: () => {
+      const indexRoute = routes.filter((route) =>
+        allowDisplayRoute(route.display)
+      )[0]
+
+      return <Navigate to={indexRoute?.path ?? "notFound"} />
+    },
     display: false,
   })
 
