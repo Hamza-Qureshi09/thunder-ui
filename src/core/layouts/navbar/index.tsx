@@ -207,10 +207,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         </Avatar>
                         <div className="grid flex-1 text-left text-sm leading-tight">
                           <span className="truncate font-medium">
-                            {me?.name}
+                            {me?.name ?? "Unamed"}
                           </span>
                           <span className="truncate text-xs text-muted-foreground">
-                            {me?.email}
+                            {me?.email ?? "N/A"}
                           </span>
                         </div>
                       </div>

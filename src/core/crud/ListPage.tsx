@@ -44,6 +44,8 @@ import { JSONSchemaToFields, type TField } from "../lib/jsonSchemaToFields"
 import { Checkbox } from "@/components/ui/checkbox"
 import { getLocalUrl, transformImage } from "../lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Filters, type TFilterValue } from "./filters"
+import { filterToMongo } from "./filters/lib/filterToMongo"
 
 const columnFromModuleMetadata = async (metadata: any) => {
   const fields = await fieldsFromModuleMetadata(metadata, {
@@ -126,6 +128,8 @@ export interface IListPageProps {
 export function ListPage({ group, name }: IListPageProps) {
   const navigate = useNavigate()
 
+  const [filters, setFilters] = React.useState<TFilterValue>()
+
   const _get = React.useCallback(
     (query: Record<string, unknown> = {}) => {
       // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -142,7 +146,10 @@ export function ListPage({ group, name }: IListPageProps) {
     [name]
   )
 
-  const get = React.useMemo(() => _get(), [_get])
+  const get = React.useMemo(
+    () => _get({ filters: filters ? filterToMongo(filters) : undefined }),
+    [_get, filters]
+  )
   const { data, error, isLoading } = use(get)
 
   const allowCreate = React.useMemo(
@@ -221,8 +228,10 @@ export function ListPage({ group, name }: IListPageProps) {
       )}
       <div className="flex min-h-0 flex-1 flex-col gap-3">
         {!isLoading ? (
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap-reverse items-center justify-between gap-2 lg:flex-nowrap">
+            <Filters fields={fields} filters={filters} onChange={setFilters} />
+
+            <div className="flex shrink-0 grow items-center justify-end gap-3">
               {data?.results.length ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger
