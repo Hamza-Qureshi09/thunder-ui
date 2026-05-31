@@ -49,10 +49,10 @@ import { Filters, type TFilterValue } from "./filters"
 import { filterToMongo } from "./filters/lib/filterToMongo"
 import { Skeleton } from "@/components/ui/skeleton"
 
-const columnFromModuleMetadata = async (metadata: any) => {
+const columnFromModuleMetadata = async (metadata: any, resolveRef = false) => {
   const fields = await fieldsFromModuleMetadata(metadata, {
     type: "output",
-    resolveRef: true,
+    resolveRef,
   })
 
   return JSONSchemaToFields.flatten(fields, { excludeArray: true })
@@ -164,6 +164,11 @@ export function ListPage({ group, name }: IListPageProps) {
     [name]
   )
 
+  const Cards = cards[name as keyof typeof cards]
+
+  const [view, setView] = React.useState(Cards ? "cards" : "table")
+  const [fieldsToFetch, setFieldsToFetch] = React.useState<string[]>([])
+
   const get = React.useMemo(
     () =>
       _get({
@@ -176,10 +181,15 @@ export function ListPage({ group, name }: IListPageProps) {
               },
             })
           : undefined,
+        project: fieldsToFetch.length
+          ? Object.fromEntries(fieldsToFetch.map((f) => [f, 1]))
+          : undefined,
       }),
-    [_get, filters, fields]
+    [_get, filters, fieldsToFetch, fields]
   )
-  const { data, error, isLoading } = use(get)
+  const { data, error, isLoading, refetch } = use(get, {
+    manualTrigger: !!Cards, // if Cards component exists, we want to manually trigger the fetch after columns are set, to avoid fetching data twice
+  })
 
   const allowCreate = React.useMemo(
     () => ThunderSDK.isPermitted(ThunderSDK.getModule(name).create),
@@ -238,12 +248,9 @@ export function ListPage({ group, name }: IListPageProps) {
   React.useEffect(() => {
     ;(async () => {
       setFields(await columnFromModuleMetadata(metadata))
+      setFields(await columnFromModuleMetadata(metadata, true))
     })()
   }, [metadata])
-
-  const Cards = cards[name as keyof typeof cards]
-
-  const [view, setView] = React.useState(Cards ? "cards" : "table")
 
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col gap-5">
@@ -391,7 +398,14 @@ export function ListPage({ group, name }: IListPageProps) {
         </ActionBar>
 
         {view === "cards" && Cards ? (
-          <Cards isLoading={isLoading} data={data?.results ?? []} />
+          <Cards
+            isLoading={isLoading}
+            data={data?.results ?? []}
+            fetcher={(fields) => {
+              setFieldsToFetch(fields)
+              refetch()
+            }}
+          />
         ) : isLoading ? (
           <TableSkeleton />
         ) : data?.results.length === 0 && !isLoading ? (

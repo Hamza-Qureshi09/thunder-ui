@@ -3,7 +3,11 @@ import type React from "react"
 
 export const cards: Record<
   string,
-  React.ComponentType<{ isLoading: boolean; data: any[] }>
+  React.ComponentType<{
+    isLoading: boolean
+    data: any[]
+    fetcher: (fields: string[]) => void
+  }>
 > = {
   // Add your custom cards components here
   // E.g: posts: PostCards
