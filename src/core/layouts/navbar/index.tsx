@@ -72,7 +72,7 @@ function SidebarTrigger() {
 export function Layout({ children }: { children: React.ReactNode }) {
   const { router } = useLayout()
   const location = useLocation()
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
   const isMobile = useIsMobile()
   const logout = useLogout()
 
@@ -130,7 +130,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   )
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
+    setTheme(resolvedTheme === "dark" ? "light" : "dark")
   }
 
   return (
@@ -271,7 +271,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   size="sm"
                   aria-label="Toggle theme"
                 >
-                  {theme === "dark" ? (
+                  {resolvedTheme === "dark" ? (
                     <IconSun className="size-4" />
                   ) : (
                     <IconMoon className="size-4" />

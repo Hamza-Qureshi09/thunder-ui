@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/static-components */
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -16,7 +17,7 @@ import {
 import type { TField } from "@/core/lib/jsonSchemaToFields"
 import { IconArrowRight, IconFilter } from "@tabler/icons-react"
 import React from "react"
-import { IconMap, useFilters } from ".."
+import { filterIcon, useFilters } from ".."
 import { FilterValueController } from "./filter-value"
 
 export function FilterSelector() {
@@ -100,7 +101,7 @@ export function FilterableColumn({
 } & React.ComponentProps<typeof CommandItem>) {
   const itemRef = React.useRef<HTMLDivElement>(null)
 
-  const Icon = IconMap[field.type]
+  const Icon = filterIcon(field)
 
   return (
     <CommandItem

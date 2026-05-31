@@ -13,6 +13,7 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme
+  resolvedTheme: ResolvedTheme
   setTheme: (theme: Theme) => void
 }
 
@@ -39,17 +40,24 @@ function getSystemTheme(): ResolvedTheme {
   return "light"
 }
 
+function resolveTheme(theme: Theme): ResolvedTheme {
+  return theme === "system" ? getSystemTheme() : theme
+}
+
 function disableTransitionsTemporarily() {
   const style = document.createElement("style")
+
   style.appendChild(
     document.createTextNode(
       "*,*::before,*::after{-webkit-transition:none!important;transition:none!important}"
     )
   )
+
   document.head.appendChild(style)
 
   return () => {
     window.getComputedStyle(document.body)
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         style.remove()
@@ -70,6 +78,7 @@ function isEditableTarget(target: EventTarget | null) {
   const editableParent = target.closest(
     "input, textarea, select, [contenteditable='true']"
   )
+
   if (editableParent) {
     return true
   }
@@ -86,6 +95,7 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const [theme, setThemeState] = React.useState<Theme>(() => {
     const storedTheme = localStorage.getItem(storageKey)
+
     if (isTheme(storedTheme)) {
       return storedTheme
     }
@@ -93,25 +103,29 @@ export function ThemeProvider({
     return defaultTheme
   })
 
-  const setTheme = React.useCallback(
-    (nextTheme: Theme) => {
-      localStorage.setItem(storageKey, nextTheme)
-      setThemeState(nextTheme)
-    },
-    [storageKey]
-  )
+  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>(() => {
+    const storedTheme = localStorage.getItem(storageKey)
+
+    if (isTheme(storedTheme)) {
+      return resolveTheme(storedTheme)
+    }
+
+    return resolveTheme(defaultTheme)
+  })
 
   const applyTheme = React.useCallback(
     (nextTheme: Theme) => {
       const root = document.documentElement
-      const resolvedTheme =
-        nextTheme === "system" ? getSystemTheme() : nextTheme
+      const nextResolvedTheme = resolveTheme(nextTheme)
+
       const restoreTransitions = disableTransitionOnChange
         ? disableTransitionsTemporarily()
         : null
 
       root.classList.remove("light", "dark")
-      root.classList.add(resolvedTheme)
+      root.classList.add(nextResolvedTheme)
+
+      setResolvedTheme(nextResolvedTheme)
 
       if (restoreTransitions) {
         restoreTransitions()
@@ -120,7 +134,20 @@ export function ThemeProvider({
     [disableTransitionOnChange]
   )
 
+  const setTheme = React.useCallback(
+    (nextTheme: Theme) => {
+      const nextResolvedTheme = resolveTheme(nextTheme)
+
+      localStorage.setItem(storageKey, nextTheme)
+
+      setThemeState(nextTheme)
+      setResolvedTheme(nextResolvedTheme)
+    },
+    [storageKey]
+  )
+
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     applyTheme(theme)
 
     if (theme !== "system") {
@@ -128,6 +155,7 @@ export function ThemeProvider({
     }
 
     const mediaQuery = window.matchMedia(COLOR_SCHEME_QUERY)
+
     const handleChange = () => {
       applyTheme("system")
     }
@@ -158,16 +186,13 @@ export function ThemeProvider({
       }
 
       setThemeState((currentTheme) => {
-        const nextTheme =
-          currentTheme === "dark"
-            ? "light"
-            : currentTheme === "light"
-              ? "dark"
-              : getSystemTheme() === "dark"
-                ? "light"
-                : "dark"
+        const currentResolvedTheme = resolveTheme(currentTheme)
+        const nextTheme: Theme =
+          currentResolvedTheme === "dark" ? "light" : "dark"
 
         localStorage.setItem(storageKey, nextTheme)
+        setResolvedTheme(nextTheme)
+
         return nextTheme
       })
     }
@@ -189,12 +214,10 @@ export function ThemeProvider({
         return
       }
 
-      if (isTheme(event.newValue)) {
-        setThemeState(event.newValue)
-        return
-      }
+      const nextTheme = isTheme(event.newValue) ? event.newValue : defaultTheme
 
-      setThemeState(defaultTheme)
+      setThemeState(nextTheme)
+      setResolvedTheme(resolveTheme(nextTheme))
     }
 
     window.addEventListener("storage", handleStorageChange)
@@ -204,16 +227,15 @@ export function ThemeProvider({
     }
   }, [defaultTheme, storageKey])
 
-  const value = React.useMemo(
-    () => ({
-      theme,
-      setTheme,
-    }),
-    [theme, setTheme]
-  )
-
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <ThemeProviderContext.Provider
+      {...props}
+      value={{
+        theme,
+        resolvedTheme,
+        setTheme,
+      }}
+    >
       {children}
     </ThemeProviderContext.Provider>
   )

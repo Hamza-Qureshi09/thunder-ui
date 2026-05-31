@@ -7,6 +7,8 @@ import {
   IconCalendar,
   IconCircleDashed,
   IconH1,
+  IconLink,
+  IconMail,
   IconNumber,
   IconSquareCheck,
   type TablerIcon,
@@ -24,16 +26,25 @@ export type TFilter = {
   children?: React.ReactNode
 }
 
-export const IconMap: Record<TField["type"], TablerIcon> = {
-  text: IconH1,
-  boolean: IconSquareCheck,
-  number: IconNumber,
-  date: IconCalendar,
-  object: IconCircleDashed,
-  email: IconH1,
-  array: IconCircleDashed,
-  url: IconH1,
-  hidden: IconH1,
+export function filterIcon(field: TField): TablerIcon {
+  if (field.enum) return IconCircleDashed
+
+  switch (field.type) {
+    case "text":
+      return IconH1
+    case "url":
+      return IconLink
+    case "date":
+      return IconCalendar
+    case "email":
+      return IconMail
+    case "boolean":
+      return IconSquareCheck
+    case "number":
+      return IconNumber
+    default:
+      return IconH1
+  }
 }
 
 const FiltersContext = React.createContext<{

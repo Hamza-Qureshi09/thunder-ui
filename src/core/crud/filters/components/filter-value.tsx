@@ -39,7 +39,7 @@ import { Label } from "@/components/ui/label"
 
 type TFilterValueProps = {
   field: TField
-  filter: TValue
+  filter?: TValue
 }
 
 export const FilterValue = React.memo(__FilterValue) as typeof __FilterValue
@@ -92,10 +92,7 @@ export function FilterValueDisplay({ field, filter }: TFilterValueProps) {
 export function FilterValueMultiOptionDisplay({
   field,
   filter,
-}: {
-  field: TField
-  filter: TValue
-}) {
+}: TFilterValueProps) {
   const options = React.useMemo(
     () =>
       (
@@ -111,8 +108,8 @@ export function FilterValueMultiOptionDisplay({
   )
 
   const selected = React.useMemo(
-    () => options.filter((o) => filter.value.includes(o.value)),
-    [filter.value, options]
+    () => options.filter((o) => filter?.value.includes(o.value)),
+    [filter?.value, options]
   )
 
   if (selected.length === 1) {
@@ -162,25 +159,25 @@ function formatDateRange(start: Date, end: Date) {
   return `${format(start, "MMM d, yyyy")} - ${format(end, "MMM d, yyyy")}`
 }
 
-export function FilterValueDateDisplay({ filter }: { filter: TValue }) {
-  if (!filter.value) return null
+export function FilterValueDateDisplay({ filter }: { filter?: TValue }) {
+  if (!filter?.value) return null
 
-  if (Array.isArray(filter.value) && filter.value.length === 0)
+  if (Array.isArray(filter?.value) && filter?.value.length === 0)
     return <IconDots className="size-4" />
-  if (Array.isArray(filter.value) && filter.value.length === 1) {
-    const value = filter.value[0]
+  if (Array.isArray(filter?.value) && filter?.value.length === 1) {
+    const value = filter?.value[0]
 
     const formattedDateStr = format(value, "MMM d, yyyy")
 
     return <span>{formattedDateStr}</span>
   }
 
-  const formattedRangeStr = formatDateRange(filter.value[0], filter.value[1])
+  const formattedRangeStr = formatDateRange(filter?.value[0], filter?.value[1])
 
   return <span>{formattedRangeStr}</span>
 }
 
-export function FilterValueTextDisplay({ filter }: { filter: TValue }) {
+export function FilterValueTextDisplay({ filter }: { filter?: TValue }) {
   const value = filter?.value
 
   if (value.length === 0 || value.trim() === "")
@@ -189,7 +186,7 @@ export function FilterValueTextDisplay({ filter }: { filter: TValue }) {
   return <span>{value}</span>
 }
 
-export function FilterValueBooleanDisplay({ filter }: { filter: TValue }) {
+export function FilterValueBooleanDisplay({ filter }: { filter?: TValue }) {
   const value = filter?.value
 
   return <span>{value?.toString()}</span>
@@ -289,9 +286,7 @@ export function FilterValueMultiOptionController({
   filter,
   field,
   onChange,
-}: {
-  filter?: TValue
-  field: TField
+}: TFilterValueProps & {
   onChange: (value: string[]) => void
 }) {
   // Compute initial options once per mount
@@ -407,9 +402,7 @@ export function FilterValueBooleanController({
   filter,
   field,
   onChange,
-}: {
-  filter?: TValue
-  field: TField
+}: TFilterValueProps & {
   onChange: (value: boolean) => void
 }) {
   return (
@@ -418,7 +411,7 @@ export function FilterValueBooleanController({
         <CommandItem className="px-2 [&_svg]:hidden">
           <Switch
             id={field.name}
-            checked={filter?.value}
+            checked={filter?.value ?? false}
             onCheckedChange={(checked) => onChange(checked)}
           />
           <Label htmlFor={field.name}>{field.label ?? field.name}</Label>
@@ -455,9 +448,7 @@ export function FilterValueNumberController({
   filter,
   field,
   onChange,
-}: {
-  filter?: TValue
-  field: TField
+}: TFilterValueProps & {
   onChange: (value: number | number[], operator?: string) => void
 }) {
   const minMax = React.useMemo(
