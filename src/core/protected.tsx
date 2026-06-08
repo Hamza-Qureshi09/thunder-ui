@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Button } from "@/components/ui/button"
 import React from "react"
-import { useAuth } from "react-oidc-context"
 import { ThunderSDK } from "thunder-sdk"
 import { LoadingScreen } from "./custom/LoadingScreen"
 import { IconBug, IconLoader, IconLogin } from "@tabler/icons-react"
@@ -9,6 +8,7 @@ import { useNavigate, useParams } from "react-router"
 import { refreshThunder } from "./lib/thunder"
 import { getAuthUrl } from "./lib/utils"
 import { isAxiosError } from "axios"
+import { useAuth } from "./context/AuthProvider"
 
 function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = React.useState(false)
@@ -22,7 +22,7 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
       ThunderSDK.plugins.essentials.registerAuthInterceptors(
         async () => auth.user?.access_token ?? null,
         async () => {
-          await auth.signinSilent()
+          await auth.userManager.signinSilent()
         }
       )
 
@@ -48,7 +48,7 @@ function ProtectedWithOAuth({ children }: { children: React.ReactNode }) {
   const loadingPermissions = !requireSignIn && !ready
 
   const handleSignIn = () => {
-    auth.signinRedirect()
+    auth.userManager.signinRedirect()
   }
 
   const handleLogout = async () => {
@@ -241,8 +241,8 @@ export function useLogout() {
 
   return async () => {
     if (import.meta.env.VITE_OAUTH_CLIENT_ID) {
-      auth.removeUser()
-      auth.revokeTokens(["refresh_token", "access_token"])
+      auth.userManager.removeUser()
+      auth.userManager.revokeTokens(["refresh_token", "access_token"])
     } else {
       try {
         await fetch(

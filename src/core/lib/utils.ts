@@ -4,6 +4,8 @@ import Package from "../../../package.json"
 import type { TRouteObject } from "../router"
 import type { TNav } from "../layouts/shared/sub-nav"
 
+import { converter, formatHex } from "culori"
+
 export function appName() {
   return Package.name
     .replace("-", " ")
@@ -163,4 +165,16 @@ export function getNavRoutes(router: TRouteObject[]) {
   const subRoutesByParent = Object.groupBy(subRoutes, (i) => i.parent!)
 
   return { routes, subRoutes: subRoutesByParent }
+}
+
+const toRgb = converter("rgb")
+
+export function rgbToHex(oklch: string) {
+  const rgb = toRgb(oklch)
+
+  if (!rgb) {
+    throw new Error("Invalid OKLCH color")
+  }
+
+  return formatHex(rgb)
 }

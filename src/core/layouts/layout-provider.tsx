@@ -22,6 +22,7 @@ export function LayoutProvider({
   layout: Layout,
   router,
 }: ILayoutProps) {
+
   return (
     <LayoutContext.Provider value={{ router }}>
       <Layout>{children}</Layout>
