@@ -53,6 +53,8 @@ export class CapacitorRedirectNavigator implements INavigator {
   public async callback(_url: string): Promise<void> {}
 }
 
+let _href: string | null = null
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -81,7 +83,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       )
   )
 
-  const [href, setHref] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [user, setUser] = React.useState<User | null>(null)
   const [error, setError] = React.useState<Error | null>(null)
@@ -134,8 +135,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
             await handleLogin(url)
           })
-        } else if (!href) {
-          setHref(window.location.href)
+        } else if (!_href) {
+          _href = window.location.href
+
           handleLogin(window.location.href)
         }
       })
