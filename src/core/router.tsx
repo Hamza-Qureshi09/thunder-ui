@@ -21,7 +21,11 @@ export type TRouteObject = {
   children?: TRouteObject[]
 } & RouteObject
 
-const rawRoutes = ThunderSDK.getModuleNames()
+const moduleNames = Array.from(
+  new Set([...ThunderSDK.getModuleNames(), ...Object.keys(routes)])
+)
+
+const rawRoutes = moduleNames
   .map((name) => {
     const overrideRoute = routes[name as keyof typeof routes]
 
