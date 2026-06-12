@@ -48,6 +48,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Filters, type TFilterValue } from "./filters"
 import { filterToMongo } from "./filters/lib/filterToMongo"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
 
 const columnFromModuleMetadata = async (metadata: any, resolveRef = false) => {
   const fields = await fieldsFromModuleMetadata(metadata, {
@@ -125,14 +132,27 @@ const prepareColumns = (
           }
 
           if (typeof value === "object") {
-            return (
-              <pre className="max-h-40 overflow-auto">
-                {JSON.stringify(value, null, 2)}
-              </pre>
+            return Object.keys(value ?? {}).length === 0 ? (
+              "N/A"
+            ) : (
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <button>
+                      <Badge>View {field.label ?? field.name}</Badge>
+                    </button>
+                  }
+                />
+                <PopoverContent>
+                  <ScrollArea>
+                    <pre>{JSON.stringify(value, null, 2)}</pre>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
             )
           }
 
-          return value
+          return value ?? "N/A"
         },
       }
     })
