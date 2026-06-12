@@ -15,6 +15,7 @@ import { Protected } from "@/core/protected"
 import { SelectTenant } from "@/core/pages/tenant/select-tenant"
 import { NotFound } from "./core/layouts/shared/not-found"
 import AppWrapper from "./core/AppWrapper"
+import { Onboarding } from "./components/onboarding"
 
 const router = createBrowserRouter(
   [
@@ -62,6 +63,7 @@ const router = createBrowserRouter(
 export function App() {
   return (
     <AppWrapper>
+      <Onboarding />
       <RouterProvider router={router} />
     </AppWrapper>
   )

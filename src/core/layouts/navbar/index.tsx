@@ -94,7 +94,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={false}>
-      <Sidebar collapsible="icon" variant="floating">
+      <Sidebar collapsible="icon" variant="floating" className="bg-background">
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
