@@ -391,9 +391,7 @@ export function ListPage({ group, name }: IListPageProps) {
                       (row) => row.original
                     )[0] as any
 
-                    navigate(`form/${row._id}`, {
-                      state: { record: row },
-                    })
+                    navigate(`form/${row._id}`)
                   }}
                 >
                   <IconEdit />
@@ -436,6 +434,15 @@ export function ListPage({ group, name }: IListPageProps) {
             isLoading={isLoading}
             data={data?.results ?? []}
             fetcher={fetcher}
+            selectedIds={selectedRows.map((v) => (v.original as any)._id)}
+            toggleSelect={(id) => {
+              const row = table
+                .getRowModel()
+                .rows.find((v) => (v.original as any)._id === id)
+
+              if (row) row.toggleSelected()
+              else table.toggleAllRowsSelected()
+            }}
           />
         ) : isLoading ? (
           <TableSkeleton />
