@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "tsc -b && vite build --base=/app",
-    "build:mobile": "tsc -b && vite build && npx cap sync",
+    "build": "npm run build:web",
+    "build:web": "tsc -b && vite build --base=/app",
+    "build:mobile": "tsc -b && vite build --mode mobile && npx cap sync",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
