@@ -88,7 +88,7 @@ export function Pagination({
     [total]
   )
 
-  return (
+  return totalPages.length > 1 ? (
     <_Pagination>
       <PaginationContent>
         <PaginationItem>
@@ -135,5 +135,5 @@ export function Pagination({
         </PaginationItem>
       </PaginationContent>
     </_Pagination>
-  )
+  ) : null
 }
