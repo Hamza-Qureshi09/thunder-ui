@@ -1,5 +1,5 @@
 import React from "react"
-import { Link } from "react-router"
+import { useNavigate } from "react-router"
 import {
   IconAlertCircle,
   IconArrowsExchange,
@@ -14,7 +14,6 @@ import { ThunderSDK } from "thunder-sdk"
 
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -37,6 +36,7 @@ export function MoreSheet({
   overflowItems: TNav[]
   activeParent?: string
 }) {
+  const navigate = useNavigate()
   const [open, setOpen] = React.useState(false)
   const { resolvedTheme, setTheme } = useTheme()
   const logout = useLogout()
@@ -57,6 +57,11 @@ export function MoreSheet({
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark")
+  }
+
+  const handleNavigate = (path: string) => {
+    setOpen(false)
+    setTimeout(() => navigate(path, { viewTransition: true }), 300)
   }
 
   return (
@@ -112,60 +117,52 @@ export function MoreSheet({
                 const active = !!item.path && item.path === activeParent
 
                 return (
-                  <SheetClose
+                  <Button
                     key={item.title}
-                    render={
-                      <Link to={item.path || "#"} viewTransition />
-                    }
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                      active
-                        ? "bg-accent text-accent-foreground"
-                        : "text-foreground hover:bg-accent/60"
-                    )}
+                    variant={active ? "secondary" : "ghost"}
+                    className="justify-start"
+                    onClick={() => handleNavigate(item.path || "#")}
                   >
                     <Icon className="size-5 shrink-0" />
                     <span className="truncate">{item.title}</span>
-                  </SheetClose>
+                  </Button>
                 )
               })}
               <Separator className="my-2" />
             </>
           )}
 
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={() => {
               const authUrl = getAuthUrl()
               authUrl.searchParams.set("returnUri", window.location.href)
               window.location.href = authUrl.toString()
             }}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent/60"
+            className="justify-start"
           >
             <IconUserCircle className="size-5 shrink-0" />
             <span>Account</span>
-          </button>
+          </Button>
 
-          <SheetClose
-            render={<Link to="/select-tenant/#list" />}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent/60"
+          <Button
+            variant="ghost"
+            className="justify-start"
+            onClick={() => handleNavigate("/select-tenant/#list")}
           >
             <IconArrowsExchange className="size-5 shrink-0" />
             <span>Change tenant</span>
-          </SheetClose>
+          </Button>
 
-          <button
-            type="button"
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent/60"
-          >
+          <Button variant="ghost" className="justify-start">
             <IconNotification className="size-5 shrink-0" />
             <span>Notifications</span>
-          </button>
+          </Button>
 
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            className="justify-start"
             onClick={toggleTheme}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent/60"
           >
             {resolvedTheme === "dark" ? (
               <IconSun className="size-5 shrink-0" />
@@ -173,7 +170,7 @@ export function MoreSheet({
               <IconMoon className="size-5 shrink-0" />
             )}
             <span>{resolvedTheme === "dark" ? "Light mode" : "Dark mode"}</span>
-          </button>
+          </Button>
         </div>
 
         <Separator />

@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import LogoDark from "/logo-dark.png"
 import LogoLight from "/logo-light.png"
-import { Link, useLocation } from "react-router"
+import { Link, useLocation, useNavigate } from "react-router"
 import React from "react"
 import {
   Sidebar,
@@ -63,6 +63,7 @@ function SidebarTrigger() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate()
   const { router } = useLayout()
   const location = useLocation()
   const { resolvedTheme, setTheme } = useTheme()
@@ -97,6 +98,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
     setTheme(resolvedTheme === "dark" ? "light" : "dark")
   }
 
+  const handleNavigate = React.useCallback(
+    (path: string) => {
+      setTimeout(() => navigate(path, { viewTransition: true }), 300)
+    },
+    [navigate, isMobile]
+  )
+
   return (
     <SidebarProvider defaultOpen={false}>
       <Sidebar collapsible="icon" variant="floating" className="bg-background">
@@ -115,7 +123,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          <NavMenu items={routes} />
+          <NavMenu items={routes} onChange={handleNavigate} />
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenu>
@@ -263,7 +271,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {subNavItems?.length ? <SubNav navMenu={subNavItems} /> : null}
+            {subNavItems && (subNavItems?.length ?? 0) > 1 ? <SubNav navMenu={subNavItems} /> : null}
           </Container>
 
           {/* Main Content */}
