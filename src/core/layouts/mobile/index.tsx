@@ -75,7 +75,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           ) : (
             <>
               <Button variant="outline" size="icon" onClick={() => navigate(-3)}>
-                <IconArrowLeft />
+                <IconArrowLeft className = "icon-flip-rtl" />
               </Button>
 
               <span className="truncate text-base font-semibold capitalize">

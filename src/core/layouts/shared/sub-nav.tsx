@@ -2,6 +2,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IconAlertCircle, type TablerIcon } from "@tabler/icons-react"
 import { useLocation, useNavigate } from "react-router"
 import React from "react"
+import { useTranslation } from "react-i18next"
 
 export type TNav = {
   title: string
@@ -14,6 +15,7 @@ export function SubNav({ navMenu }: { navMenu: TNav[] }) {
   const navigate = useNavigate()
   const location = useLocation()
   const tabRef = React.useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
 
   const { tenantId, activeParent } = React.useMemo(() => {
     const [tenantId, activeParent] = location.pathname
@@ -77,7 +79,7 @@ export function SubNav({ navMenu }: { navMenu: TNav[] }) {
             className="group-data-[variant=line]/tabs-list:data-active:after:rounded-xl px-0"
           >
             {nav.icon ? <nav.icon /> : <IconAlertCircle />}
-            {nav.title}
+            {t(nav.title)}
           </TabsTrigger>
         ))}
       </TabsList>

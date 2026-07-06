@@ -8,6 +8,7 @@ import type { TRouteObject } from "@/core/router"
 import { allowDisplayRoute } from "@/core/lib/utils"
 import { cn } from "@/lib/utils"
 import { MoreSheet } from "./more-sheet"
+import { useTranslation } from "react-i18next"
 
 export type TNav = {
   title: string
@@ -60,6 +61,7 @@ function useNavItems() {
 }
 
 function TabLink({ item, active }: { item: TNav; active: boolean }) {
+  const { t } = useTranslation()
   const Icon = item.icon ?? IconAlertCircle
 
   return (
@@ -73,7 +75,7 @@ function TabLink({ item, active }: { item: TNav; active: boolean }) {
     >
       <Icon className="size-5 shrink-0" />
       <span className="max-w-full truncate text-[11px] leading-none font-medium">
-        {item.title}
+        {t(item.title)}
       </span>
     </Link>
   )
