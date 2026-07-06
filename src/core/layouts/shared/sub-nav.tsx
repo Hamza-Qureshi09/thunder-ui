@@ -7,11 +7,12 @@ import React from "react"
 import { cn } from "@/lib/utils"
 
 export type TNav = {
-  title: string
-  icon?: TablerIcon
-  path?: string
-  parent?: string
-}
+  title: string;
+  icon?: TablerIcon;
+  path?: string;
+  parent?: string;
+  index?: number | (() => number);
+};
 
 export function SubNav({
   navMenu,
@@ -30,44 +31,44 @@ export function SubNav({
   const { tenantId, activeParent } = React.useMemo(() => {
     const [tenantId, activeParent] = location.pathname
       .split("/")
-      .filter(Boolean)
+      .filter(Boolean);
 
     return {
       tenantId,
       activeParent,
-    }
-  }, [location.pathname])
+    };
+  }, [location.pathname]);
 
   const activeTab = React.useMemo(() => {
-    if (!tenantId || !activeParent) return ""
+    if (!tenantId || !activeParent) return "";
 
     return (
       navMenu.find((nav) =>
         location.pathname.startsWith(`/${tenantId}/${activeParent}/${nav.path}`)
       )?.path ?? ""
-    )
-  }, [tenantId, activeParent, location.pathname, navMenu])
+    );
+  }, [tenantId, activeParent, location.pathname, navMenu]);
 
   React.useEffect(() => {
-    if (!activeTab) return
+    if (!activeTab) return;
     setTimeout(() => {
       const frame = requestAnimationFrame(() => {
         const triggerEl = tabRef.current?.querySelector(
-          `button[data-value="${CSS.escape(activeTab)}"]`
-        ) as HTMLElement | null
+          `button[data-value="${CSS.escape(activeTab)}"]`,
+        ) as HTMLElement | null;
 
         triggerEl?.scrollIntoView({
           behavior: "smooth",
           block: "nearest",
           inline: "center",
-        })
-      })
+        });
+      });
 
-      return () => cancelAnimationFrame(frame)
-    }, 500)
-  }, [activeTab])
+      return () => cancelAnimationFrame(frame);
+    }, 500);
+  }, [activeTab]);
 
-  if (!tenantId || !activeParent) return null
+  if (!tenantId || !activeParent) return null;
 
   const go = (path?: string) =>
     navigate(`/${tenantId}/${activeParent}/${path}`, { viewTransition: true })
@@ -115,7 +116,7 @@ export function SubNav({
       onValueChange={(path) => {
         navigate(`/${tenantId}/${activeParent}/${path}`, {
           viewTransition: true,
-        })
+        });
       }}
       className="no-scrollbar overflow-x-auto scroll-mask-x-from-90%"
     >
@@ -133,5 +134,5 @@ export function SubNav({
         ))}
       </TabsList>
     </Tabs>
-  )
+  );
 }
