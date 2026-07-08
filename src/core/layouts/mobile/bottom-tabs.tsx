@@ -2,11 +2,9 @@ import React from "react"
 import { Link, useLocation } from "react-router"
 import {
   IconAlertCircle,
-  IconShoppingCart,
   type TablerIcon,
 } from "@tabler/icons-react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { useTranslation } from "react-i18next"
 
 import { useLayout } from "@/core/layouts/layout-provider"
 import type { TRouteObject } from "@/core/router"
