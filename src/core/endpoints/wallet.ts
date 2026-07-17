@@ -14,7 +14,7 @@ export const getWallets = (query: Record<string, unknown> = {}) => {
 export const getWalletLedgers = (query: Record<string, unknown> = {}) => {
     return ThunderSDK.useCaching(
         ["walletLedgers.get", query && hash(query)],
-        async () => (await ThunderSDK.walletLedgers.get({params: {}, query: {}})),
+        async () => (await ThunderSDK.walletLedgers.get({params: {}, query})),
         { cacheTTL },
     );
 };
