@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { SkeletonRepeater } from "@/core/custom/SkeletonRepeater";
 import { Filters, type TFilterValue } from "@/core/crud/filters";
 import type { TField } from "@/core/lib/jsonSchemaToFields";
+import { CopyButton } from "@/components/ui/copy-button";
 
 type TWalletLedger = typeof ThunderSDK.walletLedgers.type.get$return.results[number];
 
@@ -186,6 +187,14 @@ export function TransactionHistory({ fields }: { fields?: TField[] }) {
                   <span className="truncate text-xs text-muted-foreground">
                     {description}
                   </span>
+                  {tx.reference && (
+                    <div className="flex items-center gap-0.5 mt-0.5">
+                      <span className="truncate text-xs text-muted-foreground/60 font-mono">
+                        {tx.reference}
+                      </span>
+                      <CopyButton value={tx.reference} />
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex shrink-0 flex-col items-end">
