@@ -1,12 +1,12 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import type { ComponentType } from "react";
 import { ThunderSDK } from "thunder-sdk";
 import type { ThunderSDK as TSDKType } from "thunder-sdk";
 import {
   IconArrowNarrowUp,
   IconArrowDownDashed,
-  IconCalendarCheck,
+  IconCalendar,
 } from "@tabler/icons-react";
 import { use } from "@/core/hooks/use";
 import { getWalletLedgers } from "@/core/endpoints/wallet";
@@ -16,6 +16,7 @@ import { SkeletonRepeater } from "@/core/custom/SkeletonRepeater";
 import { Filters, type TFilterValue } from "@/core/crud/filters";
 import { fieldsFromModuleMetadata } from "@/core/crud/FormPage";
 import { JSONSchemaToFields, type TField } from "@/core/lib/jsonSchemaToFields";
+import { CopyButton } from "@/components/ui/copy-button";
 
 type TWalletLedger = typeof TSDKType.walletLedgers.type.get$return.results[number];
 
@@ -66,6 +67,7 @@ function formatAmount(amount: number, currency: string, lang: string) {
   return `${LRI}${numberStr} ${label}${PDI}`;
 }
 
+// 🟢 Custom Parser Logic (Amount Cents + Integer Range + Reference/Description Fallback)
 function parseFilterToBackendQuery(filters?: TFilterValue) {
   if (!filters || !Object.keys(filters).length) return undefined;
   const parsed: Record<string, unknown> = {};
@@ -73,7 +75,7 @@ function parseFilterToBackendQuery(filters?: TFilterValue) {
   Object.entries(filters).forEach(([key, filter]) => {
     if (!filter) return;
 
-    // Safely extract raw value whether filter is { value: ... } or direct primitive
+    // Extract raw value safely
     const rawValue = (typeof filter === "object" && filter !== null && "value" in filter)
       ? (filter as any).value
       : filter;
@@ -87,7 +89,7 @@ function parseFilterToBackendQuery(filters?: TFilterValue) {
       return;
     }
 
-    // 2. Amount Filter (Handles Single Integer/Decimal & Arrays -> Cents + Credit & Debit Match)
+    // 2. Amount Filter (Integer/Decimal Unit -> Cents Conversion + Debit/Credit Range Match)
     if (key === "amount") {
       const nums = (Array.isArray(rawValue) ? rawValue : [rawValue])
         .map(Number)
@@ -135,7 +137,7 @@ function parseFilterToBackendQuery(filters?: TFilterValue) {
       return;
     }
 
-    // 3. Reference & Description Dual Match (e.g., "ORD287")
+    // 3. Reference & Description Dual Match (e.g. ORD287)
     if (key === "reference") {
       const refVal = String(rawValue).trim();
       if (refVal) {
@@ -179,7 +181,7 @@ function parseFilterToBackendQuery(filters?: TFilterValue) {
 
 export function TransactionHistory({ fields: propFields }: { fields?: TField[] }) {
   const { t, i18n } = useTranslation();
-  const [filters, setFilters] = useState<TFilterValue>();
+  const [activeFilters, setActiveFilters] = useState<TFilterValue | undefined>();
   const [internalFields, setInternalFields] = useState<TField[]>([]);
 
   // Metadata for walletLedgers / wallet module
@@ -213,26 +215,21 @@ export function TransactionHistory({ fields: propFields }: { fields?: TField[] }
 
   const activeFields = propFields && propFields.length > 0 ? propFields : internalFields;
 
-  // Request Query Generation using custom parser
-  const requestQuery = useMemo(() => {
-    const backendFilters = parseFilterToBackendQuery(filters);
+  const query = useMemo(() => {
+    const filters = parseFilterToBackendQuery(activeFilters);
+    return { sort: { createdAt: -1 }, ...(filters && { filters }) };
+  }, [activeFilters]);
 
-    return {
-      ...(backendFilters ? { filters: backendFilters } : {}),
-      sort: { createdAt: -1 },
-    };
-  }, [filters]);
-
-  const ledgerRequest = useMemo(() => getWalletLedgers(requestQuery), [requestQuery]);
+  const ledgerRequest = useMemo(() => getWalletLedgers(query), [query]);
   const { data, isLoading } = use(ledgerRequest);
 
   const transactions = ((data as { results?: TWalletLedger[] })?.results) ?? [];
 
   return (
     <div className="flex flex-col gap-2.5">
-      {/* Standard Filters Component */}
+      {/* Dynamic Filters from Backend Schema / Metadata */}
       <div className="flex items-center gap-2">
-        <Filters fields={activeFields} filters={filters} onChange={setFilters} />
+        <Filters fields={activeFields} filters={activeFilters} onChange={setActiveFilters} />
       </div>
 
       <div className="flex items-center justify-between mt-1">
@@ -257,7 +254,6 @@ export function TransactionHistory({ fields: propFields }: { fields?: TField[] }
         </div>
       )}
 
-      {/* 🟢 Transition.dev Bottom-to-Top Animation */}
       {!isLoading && transactions.length > 0 && (
         <div className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-card transform-gpu will-change-transform animate-in fade-in slide-in-from-bottom-4 duration-300 ease-out fill-mode-both">
           {transactions.map((tx) => {
@@ -288,6 +284,14 @@ export function TransactionHistory({ fields: propFields }: { fields?: TField[] }
                   <span className="truncate text-xs text-muted-foreground">
                     {description}
                   </span>
+                  {tx.reference && (
+                    <div className="flex items-center gap-0.5 mt-0.5">
+                      <span className="truncate text-xs text-muted-foreground/60 font-mono">
+                        {tx.reference}
+                      </span>
+                      <CopyButton value={tx.reference} />
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex shrink-0 flex-col items-end">
@@ -295,7 +299,7 @@ export function TransactionHistory({ fields: propFields }: { fields?: TField[] }
                     {formatAmount(tx.amount, tx.currency, i18n.language)}
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <IconCalendarCheck className="size-3.5 text-success" />
+                    <IconCalendar className="size-3.5" />
                     <span className="text-xs text-muted-foreground">
                       {formatDateForInput(tx.createdAt as TWalletLedger["createdAt"])}
                     </span>
